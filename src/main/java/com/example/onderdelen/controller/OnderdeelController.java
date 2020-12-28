@@ -2,7 +2,6 @@ package com.example.onderdelen.controller;
 
 import com.example.onderdelen.model.Onderdeel;
 import com.example.onderdelen.repository.OnderdeelRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,8 +11,11 @@ import java.util.List;
 @RestController
 public class OnderdeelController {
 
-    @Autowired
-    private OnderdeelRepository onderdeelRepository;
+    private final OnderdeelRepository onderdeelRepository;
+
+    public OnderdeelController(OnderdeelRepository onderdeelRepository) {
+        this.onderdeelRepository = onderdeelRepository;
+    }
 
     @PostConstruct
     public void fillDB(){
@@ -22,8 +24,6 @@ public class OnderdeelController {
             onderdeelRepository.save(new Onderdeel("wiel_130", "Norta", 4, 30));
             onderdeelRepository.save(new Onderdeel("stuur", "Batavus", 2, 15));
         }
-
-        System.out.println("Onderdeel test: " + onderdeelRepository.findAll());
     }
 
     @GetMapping("/onderdelen")
@@ -34,6 +34,11 @@ public class OnderdeelController {
     @GetMapping("/onderdelen/{merk}")
     public List<Onderdeel> findOnderdeelsByMerk(@PathVariable String merk) {
         return  onderdeelRepository.findOnderdeelsByMerk(merk);
+    }
+
+    @GetMapping("/onderdelen/merk/{merk}/naam/{naam}")
+    public Onderdeel findOnderdeelsByMerkAndNaam(@PathVariable String merk, @PathVariable String naam) {
+        return  onderdeelRepository.findOnderdeelByMerkAndNaam(merk, naam);
     }
 
     @PostMapping("/onderdelen")

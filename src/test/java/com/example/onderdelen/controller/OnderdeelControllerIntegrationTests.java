@@ -18,7 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class OnderdeelControllerIntegrationTests {
+class OnderdeelControllerIntegrationTests {
 
     @Autowired
     private MockMvc mockMvc;
@@ -34,7 +34,6 @@ public class OnderdeelControllerIntegrationTests {
 
     @BeforeEach
     public void beforeAllTests() {
-        onderdeelRepository.deleteAll();
         onderdeelRepository.save(onderdeel1);
         onderdeelRepository.save(onderdeel2);
         onderdeelRepository.save(onderdeelToBeDeleted);
@@ -46,7 +45,7 @@ public class OnderdeelControllerIntegrationTests {
     }
 
     @Test
-    public void givenOnderdeel_whenFindOnderdeelsByMerk_thenReturnJsonOnderdeel() throws Exception {
+    void givenOnderdeel_whenFindOnderdeelsByMerk_thenReturnJsonOnderdeel() throws Exception {
         mockMvc.perform(get("/onderdelen/{merk}", "merk1"))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -57,7 +56,18 @@ public class OnderdeelControllerIntegrationTests {
     }
 
     @Test
-    public void givenOnderdeel_whenFindAll_thenReturnJsonOnderdeel() throws Exception {
+    void givenOnderdeel_whenFindOnderdeelsByMerkAndNaam_thenReturnJsonOnderdeel() throws Exception {
+        mockMvc.perform(get("/onderdelen/merk/{merk}/naam/{naam}", "merk1", "naam1"))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.merk", is("merk1")))
+                .andExpect(jsonPath("$.naam", is("naam1")))
+                .andExpect(jsonPath("$.voorraad", is(1)))
+                .andExpect(jsonPath("$.prijs", is(1)));
+    }
+
+    @Test
+    void givenOnderdeel_whenFindAll_thenReturnJsonOnderdeel() throws Exception {
         mockMvc.perform(get("/onderdelen"))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -76,7 +86,7 @@ public class OnderdeelControllerIntegrationTests {
     }
 
     @Test
-    public void givenPostOnderdeel_thenReturnJsonOnderdeel() throws Exception {
+    void givenPostOnderdeel_thenReturnJsonOnderdeel() throws Exception {
         Onderdeel onderdeelToAdd = new Onderdeel("naam4", "merk4", 4, 4);
 
         mockMvc.perform(post("/onderdelen")
@@ -91,7 +101,7 @@ public class OnderdeelControllerIntegrationTests {
     }
 
     @Test
-    public void givenOnderdeel_whenPutOnderdeel_thenReturnJsonOnderdeel() throws Exception {
+    void givenOnderdeel_whenPutOnderdeel_thenReturnJsonOnderdeel() throws Exception {
         Onderdeel updatedOnderdeel = new Onderdeel("naam1", "merk1", 1, 2);
 
         mockMvc.perform(put("/onderdelen")
@@ -106,14 +116,14 @@ public class OnderdeelControllerIntegrationTests {
     }
 
     @Test
-    public void givenOnderdeel_whenDeleteOnderdeel_thenStatusOk() throws Exception {
+    void givenOnderdeel_whenDeleteOnderdeel_thenStatusOk() throws Exception {
         mockMvc.perform(delete("/onderdelen/merk/{merk}/naam/{naam}", "merk3", "naam3")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
     @Test
-    public void givenNoOnderdeel_whenDeleteOnderdeel_thenStatusNotFound() throws Exception {
+    void givenNoOnderdeel_whenDeleteOnderdeel_thenStatusNotFound() throws Exception {
         mockMvc.perform(delete("/onderdelen/merk/{merk}/naam/{naam}", "merk3", "TEST")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());

@@ -8,6 +8,8 @@ import java.util.List;
 
 @Repository
 public interface OnderdeelRepository extends MongoRepository<Onderdeel, String> {
+
     List<Onderdeel> findOnderdeelsByMerk(String merk);
+
     Onderdeel findOnderdeelByMerkAndNaam(String merk, String naam);
 }

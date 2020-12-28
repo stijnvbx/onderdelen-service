@@ -11,8 +11,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static org.hamcrest.Matchers.is;
 import static org.mockito.BDDMockito.given;
@@ -21,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class OnderdeelControllerUnitTests {
+class OnderdeelControllerUnitTests {
 
     @Autowired
     private MockMvc mockMvc;
@@ -29,14 +28,13 @@ public class OnderdeelControllerUnitTests {
     @MockBean
     private OnderdeelRepository onderdeelRepository;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    public  void givenOnderdeel_whenGetOnderdeelsByMerk_thenReturnJsonOnderdeel() throws Exception {
+    void givenOnderdeel_whenGetOnderdeelsByMerk_thenReturnJsonOnderdeel() throws Exception {
         Onderdeel onderdeel1 = new Onderdeel("naam1", "merk1", 1, 1);
 
-        List<Onderdeel> onderdeelList = new ArrayList<>();
-        onderdeelList.add(onderdeel1);
+        List<Onderdeel> onderdeelList = Collections.singletonList(onderdeel1);
         given(onderdeelRepository.findOnderdeelsByMerk("merk1")).willReturn(onderdeelList);
 
         mockMvc.perform(get("/onderdelen/{merk}", "merk1"))
@@ -48,17 +46,28 @@ public class OnderdeelControllerUnitTests {
                 .andExpect(jsonPath("$[0].prijs", is(1)));
     }
 
+    @Test
+    void givenOnderdeel_whenFindOnderdeelsByMerkAndNaam_thenReturnJsonOnderdeel() throws Exception {
+        Onderdeel onderdeel1 = new Onderdeel("naam1", "merk1", 1, 1);
+
+        given(onderdeelRepository.findOnderdeelByMerkAndNaam("merk1", "naam1")).willReturn(onderdeel1);
+
+        mockMvc.perform(get("/onderdelen/merk/{merk}/naam/{naam}", "merk1", "naam1"))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.merk", is("merk1")))
+                .andExpect(jsonPath("$.naam", is("naam1")))
+                .andExpect(jsonPath("$.voorraad", is(1)))
+                .andExpect(jsonPath("$.prijs", is(1)));
+    }
 
     @Test
-    public void givenOnderdeel_whenFindAll_thenReturnJsonOnderdeel() throws Exception {
+    void givenOnderdeel_whenFindAll_thenReturnJsonOnderdeel() throws Exception {
         Onderdeel onderdeel1 = new Onderdeel("naam1", "merk1", 1, 1);
         Onderdeel onderdeel2 = new Onderdeel("naam2", "merk2", 2, 2);
         Onderdeel onderdeel3 = new Onderdeel("naam3", "merk3", 3, 3);
 
-        List<Onderdeel> onderdeelList = new ArrayList<>();
-        onderdeelList.add(onderdeel1);
-        onderdeelList.add(onderdeel2);
-        onderdeelList.add(onderdeel3);
+        List<Onderdeel> onderdeelList = Arrays.asList(onderdeel1, onderdeel2, onderdeel3);
         given(onderdeelRepository.findAll()).willReturn(onderdeelList);
 
         mockMvc.perform(get("/onderdelen"))
@@ -79,7 +88,7 @@ public class OnderdeelControllerUnitTests {
     }
 
     @Test
-    public void givenPostOnderdeel_thenReturnJsonOnderdeel() throws Exception {
+    void givenPostOnderdeel_thenReturnJsonOnderdeel() throws Exception {
         Onderdeel onderdeelToAdd = new Onderdeel("naam4", "merk4", 4, 4);
 
         mockMvc.perform(post("/onderdelen")
@@ -94,7 +103,7 @@ public class OnderdeelControllerUnitTests {
     }
 
     @Test
-    public void givenOnderdeel_whenPutOnderdeel_thenReturnJsonOnderdeel() throws Exception {
+    void givenOnderdeel_whenPutOnderdeel_thenReturnJsonOnderdeel() throws Exception {
         Onderdeel onderdeel = new Onderdeel("naam1", "merk1", 1, 1);
 
         given(onderdeelRepository.findOnderdeelByMerkAndNaam("merk1", "naam1")).willReturn(onderdeel);
@@ -113,7 +122,7 @@ public class OnderdeelControllerUnitTests {
     }
 
     @Test
-    public void givenOnderdeel_whenDeleteOnderdeel_thenStatusOk() throws Exception {
+    void givenOnderdeel_whenDeleteOnderdeel_thenStatusOk() throws Exception {
         Onderdeel onderdeelToBeDeleted = new Onderdeel("naam3", "merk3", 3, 3);
 
         given(onderdeelRepository.findOnderdeelByMerkAndNaam("merk3", "naam3")).willReturn(onderdeelToBeDeleted);
@@ -124,9 +133,7 @@ public class OnderdeelControllerUnitTests {
     }
 
     @Test
-    public void givenNoOnderdeel_whenDeleteOnderdeel_thenStatusNotFound() throws Exception {
-        Onderdeel onderdeelToBeDeleted = new Onderdeel("naam3", "merk3", 3, 3);
-
+    void givenNoOnderdeel_whenDeleteOnderdeel_thenStatusNotFound() throws Exception {
         given(onderdeelRepository.findOnderdeelByMerkAndNaam("merk3", "TEST")).willReturn(null);
 
         mockMvc.perform(delete("/onderdelen/merk/{merk}/naam/{naam}", "merk3", "TEST")
